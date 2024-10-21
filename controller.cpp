@@ -1,13 +1,11 @@
 //-----------------------------------------------------------
 // controller.cpp
 //-----------------------------------------------------------
-#define WITH_UI		0
+
 #define WITH_VOLTS	0
 
 #include "controller.h"
-#if WITH_UI
-	#include "uiScreen.h"
-#endif
+#include "uiScreen.h"
 #include <myTempSensor.h>
 #include <myIOTLog.h>
 
@@ -82,9 +80,7 @@ void tempController::setup()
     LOGD("tempController::setup(%s) started",getVersion());
     proc_entry();
 
-#if WITH_UI
 	ui_screen.init();
-#endif
 
 	myIOTDevice::setup();
 
@@ -126,9 +122,7 @@ void tempController::setup()
 
     proc_leave();
 
-#if WITH_UI
     ui_screen.backlight(1);
-#endif
 
     LOGD("tempController::setup(%s) completed",getVersion());
 }
@@ -152,9 +146,7 @@ void tempController::stateTask(void *param)
 void tempController::onBacklightChanged(const myIOTValue *value, int val)
 {
 	LOGU("onBacklightChanged(%d)",val);
-#if WITH_UI
 	ui_screen.backlight(1);
-#endif
 }
 
 
@@ -174,6 +166,7 @@ void tempController::onSetPointChanged(const myIOTValue *value, float val)
 	}
 }
 
+
 void tempController::setRelay(bool on)
 {
 	if (cur_relay_on != on)
@@ -181,6 +174,9 @@ void tempController::setRelay(bool on)
 		LOGI("setRelay(%d)",on);
 		cur_relay_on = on;
 		digitalWrite(PIN_RELAY,on);
+		#if WITH_ONBOARD_LED
+			digitalWrite(PIN_ONBOARD_LED,on);
+		#endif
 	}
 }
 
@@ -356,9 +352,7 @@ void tempController::loop()
 
 	// handle UI
 
-#if WITH_UI
 	ui_screen.loop();
-#endif
 
 	// publish changes every couple of seconds
 	// and log temperature/rpm changes

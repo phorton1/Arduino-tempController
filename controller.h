@@ -12,21 +12,25 @@
 	// attempt to store history in RAM
 #define WITH_FAKE_TEMPS		1
 	// to allow testing on bare ESP32
+#define WITH_ONBOARD_LED	0
+	// not sure I like it
 
 
 //=========================================================
 // pins
 //=========================================================
 
-#define PIN_ONE_WIRE		4		// One-Wire bus to DS18B20 temperature probes
+#define PIN_ONBOARD_LED		2
+#define PIN_ONE_WIRE		33		// One-Wire bus to DS18B20 temperature probes
 
-#define PIN_BUTTON1			12
-#define PIN_BUTTON2			33
+#define PIN_BUTTON1			25
+#define PIN_BUTTON2			26
+#define PIN_BUTTON3			13
 
-#define PIN_S_PLUS			34		// sense 12V
-#define PIN_S_5V			35		// sense buck 5V power supply
+#define PIN_S_12V			34		// sense 12V
+#define PIN_S_5V			39		// sense buck 5V power supply
 
-#define PIN_RELAY			26		// diagnostic diode on
+#define PIN_RELAY			32		// diagnostic diode on
 
 
 //------------------------

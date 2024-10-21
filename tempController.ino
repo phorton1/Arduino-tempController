@@ -78,10 +78,10 @@ const valDescriptor temp_values[] =
 #if WITH_FAKE_TEMPS
 	{ID_USE_FAKE,			VALUE_TYPE_BOOL,	VALUE_STORE_PREF,		VALUE_STYLE_NONE,	(void *) &tempController::_use_fake,			NULL,	{ .int_range	= {1,	0,	1}}, },
     {ID_RESET_FAKE,         VALUE_TYPE_COMMAND, VALUE_STORE_PROG,       VALUE_STYLE_NONE,   NULL, (void *) tempController::resetFake },
-	{ID_FAKE_MIN,			VALUE_TYPE_FLOAT,	VALUE_STORE_PREF,		VALUE_STYLE_NONE,	(void *) &tempController::_fake_min,			NULL,	{ .float_range	= {27, -1000, 1000}},	},
-	{ID_FAKE_MAX, 			VALUE_TYPE_FLOAT,	VALUE_STORE_PREF,		VALUE_STYLE_NONE,	(void *) &tempController::_fake_max,			NULL,	{ .float_range	= {100, -1000, 1000}},	},
-	{ID_FAKE_OFF_DSEC, 		VALUE_TYPE_FLOAT,	VALUE_STORE_PREF,		VALUE_STYLE_NONE,	(void *) &tempController::_fake_off_dsec,		NULL,	{ .float_range	= {0.5, -1000, 1000}},	},
-	{ID_FAKE_ON_DSEC,		VALUE_TYPE_FLOAT,	VALUE_STORE_PREF,		VALUE_STYLE_NONE,	(void *) &tempController::_fake_on_dsec,		NULL,	{ .float_range	= {0.4, -1000, 1000}},	},
+	{ID_FAKE_MIN,			VALUE_TYPE_FLOAT,	VALUE_STORE_PREF,		VALUE_STYLE_NONE,	(void *) &tempController::_fake_min,			NULL,	{ .float_range	= {27,   -1000, 1000}},	},
+	{ID_FAKE_MAX, 			VALUE_TYPE_FLOAT,	VALUE_STORE_PREF,		VALUE_STYLE_NONE,	(void *) &tempController::_fake_max,			NULL,	{ .float_range	= {100,  -1000, 1000}},	},
+	{ID_FAKE_OFF_DSEC, 		VALUE_TYPE_FLOAT,	VALUE_STORE_PREF,		VALUE_STYLE_NONE,	(void *) &tempController::_fake_off_dsec,		NULL,	{ .float_range	= {0.05, -1000, 1000}},	},
+	{ID_FAKE_ON_DSEC,		VALUE_TYPE_FLOAT,	VALUE_STORE_PREF,		VALUE_STYLE_NONE,	(void *) &tempController::_fake_on_dsec,		NULL,	{ .float_range	= {0.04, -1000, 1000}},	},
 #endif                                          
 
 };
@@ -126,6 +126,11 @@ float	tempController::_volts_5v;
 
 void setup()
 {
+	#if WITH_ONBOARD_LED
+		pinMode(PIN_ONBOARD_LED,OUTPUT);
+		digitalWrite(PIN_ONBOARD_LED,0);
+	#endif
+
 	pinMode(PIN_RELAY,OUTPUT);
 	digitalWrite(PIN_RELAY,0);
 

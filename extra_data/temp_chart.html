@@ -23,17 +23,19 @@
 
 
 <script>
-	// denormalized var & function from iotCommon.js
+	// denormalized vars & function from iotCommon.js
 
-		var DEGREE_TYPE = 0;
+	var DEGREE_TYPE = 0;
+	var navbar_height = 0;
 
-		function centigradeToFarenheit(centigrade)
-		{
-			var farenheit = (centigrade*9)/5 + 32;
-			return parseFloat(farenheit.toFixed(3));
-		}
+	function centigradeToFarenheit(centigrade)
+	{
+		var farenheit = (centigrade*9)/5 + 32;
+		return parseFloat(farenheit.toFixed(3));
+	}
 
-
+	// temp_chart.html specifics
+	
 	function onDegreeSelect()
 	{
 		var ele = document.getElementById('degree_select');
@@ -55,6 +57,9 @@
 		}
 		xhr_html.open('GET', '/custom/chart_html/tempData?width=800&height=400&refresh=0', true);
 		xhr_html.send();
+
+		onChartResize();
+		window.onresize = onChartResize;
 	}
 
 	window.onload = startWidget;
