@@ -12,8 +12,8 @@
 	// attempt to store history in RAM
 #define WITH_FAKE_TEMPS		1
 	// to allow testing on bare ESP32
-#define WITH_ONBOARD_LED	0
-	// not sure I like it
+#define WITH_ONBOARD_LED	1
+	// shows blue if !wifi StATION
 
 
 //=========================================================

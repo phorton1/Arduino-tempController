@@ -60,7 +60,7 @@ const valDescriptor temp_values[] =
 	{ID_MODE,				VALUE_TYPE_ENUM,	VALUE_STORE_PREF,		VALUE_STYLE_NONE,		(void *) &tempController::_mode,    		NULL, 	{ .enum_range = { 0, tempModes }} },
 	{ID_SETPOINT_HIGH,      VALUE_TYPE_FLOAT,	VALUE_STORE_PREF,		VALUE_STYLE_TEMPERATURE,(void *) &tempController::_setpoint_high,   (void *) tempController::onSetPointChanged,	{ .float_range	= {50,	-200+MIN_SETPOINT_DIF,	200+MIN_SETPOINT_DIF}},	},
 	{ID_SETPOINT_LOW,       VALUE_TYPE_FLOAT,	VALUE_STORE_PREF,		VALUE_STYLE_TEMPERATURE,(void *) &tempController::_setpoint_low,    (void *) tempController::onSetPointChanged,	{ .float_range	= {30,	-200-MIN_SETPOINT_DIF,	200-MIN_SETPOINT_DIF}},	},
-	{ID_TEMP_SENSE_ID,    	VALUE_TYPE_STRING,	VALUE_STORE_PREF,		VALUE_STYLE_NONE,		(void *) &tempController::_temp_sense_id, 	NULL,	MY_TSENSOR_05 },
+	{ID_TEMP_SENSE_ID,    	VALUE_TYPE_STRING,	VALUE_STORE_PREF,		VALUE_STYLE_NONE,		(void *) &tempController::_temp_sense_id, 	NULL,	MY_TSENSOR_03 },
 	{ID_SENSE_SECS,    		VALUE_TYPE_INT,		VALUE_STORE_PREF,		VALUE_STYLE_NONE,		(void *) &tempController::_sense_secs, 		NULL,	{ .int_range	= {10,  0,		300}},  },
 	{ID_CALIB_VOLTS_12V,    VALUE_TYPE_FLOAT,	VALUE_STORE_PREF,		VALUE_STYLE_NONE,		(void *) &tempController::_calib_volts_12v, NULL,	{ .float_range	= {1,	0.5,	1.5}},	},
 	{ID_CALIB_VOLTS_5V,     VALUE_TYPE_FLOAT,	VALUE_STORE_PREF,		VALUE_STYLE_NONE,		(void *) &tempController::_calib_volts_5v,  NULL,	{ .float_range	= {1,	0.5,	1.5}},	},
@@ -128,7 +128,7 @@ void setup()
 {
 	#if WITH_ONBOARD_LED
 		pinMode(PIN_ONBOARD_LED,OUTPUT);
-		digitalWrite(PIN_ONBOARD_LED,0);
+		digitalWrite(PIN_ONBOARD_LED,1);
 	#endif
 
 	pinMode(PIN_RELAY,OUTPUT);
@@ -136,7 +136,7 @@ void setup()
 
     Serial.begin(MY_IOT_ESP32_CORE == 3 ? 115200 : 921600);
     delay(1000);
-
+	
     tempController::setDeviceType(TEMP_CONTROLLER);
     tempController::setDeviceVersion(TEMP_CONTROLLER_VERSION);
     tempController::setDeviceUrl(TEMP_CONTROLLER_URL);

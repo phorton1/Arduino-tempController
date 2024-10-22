@@ -174,7 +174,7 @@ void tempController::setRelay(bool on)
 		LOGI("setRelay(%d)",on);
 		cur_relay_on = on;
 		digitalWrite(PIN_RELAY,on);
-		#if WITH_ONBOARD_LED
+		#if 0 && WITH_ONBOARD_LED
 			digitalWrite(PIN_ONBOARD_LED,on);
 		#endif
 	}
@@ -269,7 +269,7 @@ void tempController::stateMachine()
 		{
 			if (_temp_sense_id != "")
 			{
-				float temp = t_sense.getDegreesC(_temp_sense_id);
+				float temp = t_sense.getDegreesC(_temp_sense_id.c_str());
 				if (temp < TEMPERATURE_ERROR)
 				{
 					cur_temperature = temp;
@@ -359,11 +359,11 @@ void tempController::loop()
 
 	#define PUBLISH_INTERVAL 	2000
 
-	bool do_log = 0;
 	uint32_t now = millis();
 	static uint32_t last_publish;
 	if (now - last_publish > PUBLISH_INTERVAL)
 	{
+		bool do_log = 0;
 		last_publish = now;
 
 		// publish temperature
@@ -398,12 +398,24 @@ void tempController::loop()
 		if (_volts_5v != v_sense._volts_5V)
 			setFloat(ID_VOLTS_5V,v_sense._volts_5V);
 #endif
-	}
 
-	#if WITH_MEM_HISTORY
-		if (do_log)
-			addTempRecord(_temperature,_relay_on);
+		#if WITH_MEM_HISTORY
+			if (do_log)
+				addTempRecord(_temperature,_relay_on);
+		#endif
+
+	#if WITH_ONBOARD_LED
+		static int last_sta = -1;
+		iotConnectStatus_t mode = controller->getConnectStatus();
+		int sta = (mode == WIFI_MODE_STA) ? 1 : 0;
+		if (last_sta != sta)
+		{
+			last_sta = sta;
+			digitalWrite(PIN_ONBOARD_LED,!sta);
+		}
 	#endif
+	}
+	
 }
 
 
