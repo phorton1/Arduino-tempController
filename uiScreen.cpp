@@ -551,18 +551,18 @@ void uiScreen::showScreen()
     {
         char v_buf[48];
         static float volts_12v;
-        static float volts_5v;
+        static float volts_3v;
 
         if (screen_changed ||
             volts_12v != controller->_volts_12v ||
-            volts_5v != controller->_volts_5v)
+            volts_3v != controller->_volts_3v)
         {
             volts_12v = controller->_volts_12v;
-            volts_5v = controller->_volts_5v;
+            volts_3v = controller->_volts_3v;
 
             oled.clearDisplay();
             display(WAIT,FONT1,0,16,"Power Supp %4.1fV",volts_12v);
-            display(SHOW,FONT1,0,32,"Controller %4.1fV",volts_5v);
+            display(SHOW,FONT1,0,32,"ESP32 3v   %4.1fV",volts_3v);
         }
     }
 

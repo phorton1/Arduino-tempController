@@ -2,10 +2,9 @@
 // controller.cpp
 //-----------------------------------------------------------
 
-#define WITH_VOLTS	0
-
 #include "controller.h"
 #include "uiScreen.h"
+#include "tempVolts.h"
 #include <myTempSensor.h>
 #include <myIOTLog.h>
 
@@ -100,13 +99,10 @@ void tempController::setup()
 
 	LOGI("initial MODE=%d",_mode);
 
-#if WITH_VOLTS
-	// v_sense.init();
-#endif
-	t_sense.init();	// ignore errors in initialization
+	temp_volts.init();
+	t_sense.init();		// ignore errors in initialization
 
 #if WITH_FAKE_TEMPS
-	randomSeed(time(NULL) + millis() + micros());
 	if (_use_fake)
 		resetFake();
 #endif
@@ -231,31 +227,6 @@ void tempController::setRelay(bool on)
 void tempController::stateMachine()
 {
 	uint32_t now = millis();
-
-	//--------------------------------
-	// voltage sensing
-	//--------------------------------
-
-#if WITH_VOLTS
-	#if WITH_FAKE_TEMPS
-		if (!_use_fake)
-	#endif
-	{
-		static uint32_t last_vsense = 0;
-		if (!last_vsense || now - last_vsense >= _inv_sense_ms)
-		{
-			last_vsense = now;
-			v_sense.sense();
-
-		}
-	}
-#endif
-
-
-	//---------------------------
-	// temperature sensor
-	//---------------------------
-
 	static uint32_t last_sense;
 	if (!last_sense || now - last_sense > (_sense_secs * 1000))
 	{
@@ -286,6 +257,8 @@ void tempController::stateMachine()
 				 cur_temperature,
 				 cur_relay_on);
 		#endif
+
+		temp_volts.sense();
 	}
 
 
@@ -380,7 +353,11 @@ void tempController::loop()
 
 		String status = "";
 		if (m_temp_error)
-			status = "TEMP_ERROR:" + String(m_temp_error);
+		{
+			status = "TEMP_ERROR(" +
+				String(m_temp_error) + ") " +
+				String(myTempSensor::errString(m_temp_error));
+		}
 		if (_status_str != status)
 			setString(ID_STATUS,status);
 
@@ -392,12 +369,10 @@ void tempController::loop()
 			setBool(ID_RELAY_ON,cur_relay_on);
 		}
 
-#if WITH_VOLTS
-		if (_volts_12v != v_sense._volts_inv)
-			setFloat(ID_VOLTS_INV,v_sense._volts_inv);
-		if (_volts_5v != v_sense._volts_5V)
-			setFloat(ID_VOLTS_5V,v_sense._volts_5V);
-#endif
+		if (_volts_12v != temp_volts._volts_12V)
+			setFloat(ID_VOLTS_12V,temp_volts._volts_12V);
+		if (_volts_3v != temp_volts._volts_3V)
+			setFloat(ID_VOLTS_3V,temp_volts._volts_3V);
 
 		#if WITH_MEM_HISTORY
 			if (do_log)

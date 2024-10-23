@@ -16,7 +16,7 @@ static valueIdType dash_items[] = {
 	ID_SETPOINT_LOW,
 	ID_SETPOINT_HIGH,
 	ID_VOLTS_12V,
-	ID_VOLTS_5V,
+	ID_VOLTS_3V,
 #if WITH_MEM_HISTORY
 	ID_CHART_LINK,
 #endif
@@ -28,7 +28,7 @@ static valueIdType config_items[] = {
 	ID_SENSE_SECS,
 	ID_TEMP_SENSE_ID,
 	ID_CALIB_VOLTS_12V,
-	ID_CALIB_VOLTS_5V,
+	ID_CALIB_VOLTS_3V,
 	ID_BACKLIGHT_SECS,
 #if WITH_FAKE_TEMPS
 	ID_USE_FAKE,
@@ -63,14 +63,14 @@ const valDescriptor temp_values[] =
 	{ID_TEMP_SENSE_ID,    	VALUE_TYPE_STRING,	VALUE_STORE_PREF,		VALUE_STYLE_NONE,		(void *) &tempController::_temp_sense_id, 	NULL,	MY_TSENSOR_03 },
 	{ID_SENSE_SECS,    		VALUE_TYPE_INT,		VALUE_STORE_PREF,		VALUE_STYLE_NONE,		(void *) &tempController::_sense_secs, 		NULL,	{ .int_range	= {10,  0,		300}},  },
 	{ID_CALIB_VOLTS_12V,    VALUE_TYPE_FLOAT,	VALUE_STORE_PREF,		VALUE_STYLE_NONE,		(void *) &tempController::_calib_volts_12v, NULL,	{ .float_range	= {1,	0.5,	1.5}},	},
-	{ID_CALIB_VOLTS_5V,     VALUE_TYPE_FLOAT,	VALUE_STORE_PREF,		VALUE_STYLE_NONE,		(void *) &tempController::_calib_volts_5v,  NULL,	{ .float_range	= {1,	0.5,	1.5}},	},
+	{ID_CALIB_VOLTS_3V,     VALUE_TYPE_FLOAT,	VALUE_STORE_PREF,		VALUE_STYLE_NONE,		(void *) &tempController::_calib_volts_3v,  NULL,	{ .float_range	= {1,	0.5,	1.5}},	},
 	{ID_BACKLIGHT_SECS,     VALUE_TYPE_INT,		VALUE_STORE_PREF,		VALUE_STYLE_NONE,		(void *) &tempController::_backlight_secs,  (void *) tempController::onBacklightChanged, { .int_range	= {30,	15,	BACKLIGHT_ALWAYS_ON}}, },
 
 	{ID_STATUS,      		VALUE_TYPE_STRING,	VALUE_STORE_PUB,		VALUE_STYLE_READONLY,	(void *) &tempController::_status_str,   	NULL,	},
 	{ID_TEMPERATURE,        VALUE_TYPE_FLOAT,	VALUE_STORE_PUB,		VALUE_STYLE_RO_TEMP,	(void *) &tempController::_temperature,     NULL,	{ .float_range	= {0,	-200,	200}},	},
 	{ID_RELAY_ON,         	VALUE_TYPE_BOOL,	VALUE_STORE_PUB,		VALUE_STYLE_READONLY,	(void *) &tempController::_relay_on,      	NULL,	},
 	{ID_VOLTS_12V,			VALUE_TYPE_FLOAT,	VALUE_STORE_PUB,		VALUE_STYLE_READONLY,	(void *) &tempController::_volts_12v,		NULL,	{ .float_range	= {0,	0,	24}},	},
-	{ID_VOLTS_5V,			VALUE_TYPE_FLOAT,	VALUE_STORE_PUB,		VALUE_STYLE_READONLY,	(void *) &tempController::_volts_5v,		NULL,	{ .float_range	= {0,	0,	24}},	},
+	{ID_VOLTS_3V,			VALUE_TYPE_FLOAT,	VALUE_STORE_PUB,		VALUE_STYLE_READONLY,	(void *) &tempController::_volts_3v,		NULL,	{ .float_range	= {0,	0,	24}},	},
 #if WITH_MEM_HISTORY
 	{ID_CHART_LINK,			VALUE_TYPE_STRING,	VALUE_STORE_PUB,		VALUE_STYLE_READONLY,	(void *) &tempController::_chart_link, },
 #endif
@@ -97,14 +97,14 @@ float	tempController::_setpoint_low;
 String	tempController::_temp_sense_id;
 int		tempController::_sense_secs;
 float	tempController::_calib_volts_12v;
-float	tempController::_calib_volts_5v;
+float	tempController::_calib_volts_3v;
 int		tempController::_backlight_secs;
 
 String  tempController::_status_str;
 float	tempController::_temperature;
 bool 	tempController::_relay_on;
 float	tempController::_volts_12v;
-float	tempController::_volts_5v;
+float	tempController::_volts_3v;
 #if WITH_MEM_HISTORY
 	String 	tempController::_chart_link;
 #endif
@@ -126,17 +126,32 @@ float	tempController::_volts_5v;
 
 void setup()
 {
-	#if WITH_ONBOARD_LED
-		pinMode(PIN_ONBOARD_LED,OUTPUT);
-		digitalWrite(PIN_ONBOARD_LED,1);
-	#endif
+	// first things first, turn off the relay JIC
 
 	pinMode(PIN_RELAY,OUTPUT);
 	digitalWrite(PIN_RELAY,0);
 
+	// flash led 3 times & leave it off
+
+	#if WITH_ONBOARD_LED
+		pinMode(PIN_ONBOARD_LED,OUTPUT);
+		for (int i=0; i<7; i++)
+		{
+			digitalWrite(PIN_ONBOARD_LED,i&1);
+			delay(125);
+		}
+	#endif
+
     Serial.begin(MY_IOT_ESP32_CORE == 3 ? 115200 : 921600);
     delay(1000);
 	
+	// turn LED on after serial port opened
+	// it will be turned off if a STA connection is made
+
+	#if WITH_ONBOARD_LED
+		digitalWrite(PIN_ONBOARD_LED,1);
+	#endif
+
     tempController::setDeviceType(TEMP_CONTROLLER);
     tempController::setDeviceVersion(TEMP_CONTROLLER_VERSION);
     tempController::setDeviceUrl(TEMP_CONTROLLER_URL);
