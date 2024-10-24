@@ -1,5 +1,5 @@
 //-----------------------------------------
-// uiScreen.cpp
+// tempScreen.cpp
 //-----------------------------------------
 
 #define WITH_SSD1306    0       // small i2c OLED display
@@ -7,7 +7,7 @@
 
 
 #include "controller.h"
-#include "uiScreen.h"
+#include "tempScreen.h"
 #include <myIOTButtons.h>
 #include <myIOTLog.h>
 #include <myIOTWebServer.h>
@@ -66,7 +66,7 @@ const char *edit_ids[NUM_IOT_SCREENS] = {
 
 
 
-uiScreen  ui_screen;
+tempScreen  temp_screen;
 
 Adafruit_SSD1306 oled(SCREEN_WIDTH, SCREEN_HEIGHT);  // default Wire; no reset pin
 
@@ -127,10 +127,10 @@ Adafruit_SSD1306 oled(SCREEN_WIDTH, SCREEN_HEIGHT);  // default Wire; no reset p
 // implementation
 //------------------------------------------------
 
-void uiScreen::init()
+void tempScreen::init()
 {
     int button_pins[3] = {PIN_BUTTON1, PIN_BUTTON2, PIN_BUTTON3};
-    ui_buttons.init(3, button_pins, buttonStub);
+    iot_buttons.init(3, button_pins, buttonStub);
 
     oled.begin(SSD1306_SWITCHCAPVCC, OLED_I2C_ADDR);
     oled.display();  // show built in Adafruit splash screen
@@ -140,7 +140,6 @@ void uiScreen::init()
     backlight(1);
 
     #if SHOW_BOOT_REASON
-
         display(FONT1,0,0,UI_JUST_CENTER,SCREEN_WIDTH,bootReason());
         oled.display();
         delay(2000);
@@ -154,9 +153,9 @@ void uiScreen::init()
 
 
 // static
-bool uiScreen::buttonStub(int button_num, int event_type)
+bool tempScreen::buttonStub(int button_num, int event_type)
 {
-    return ui_screen.onButton(button_num,event_type);
+    return temp_screen.onButton(button_num,event_type);
 }
 
 
@@ -167,7 +166,7 @@ bool uiScreen::buttonStub(int button_num, int event_type)
 
 
 
-void uiScreen::backlight(int val)
+void tempScreen::backlight(int val)
 {
     m_backlight = val;
     m_activity_time = millis();
@@ -176,7 +175,7 @@ void uiScreen::backlight(int val)
 }
 
 
-void uiScreen::display(int font_size, int y, int x, int just, int w, const char *format, ...)
+void tempScreen::display(int font_size, int y, int x, int just, int w, const char *format, ...)
 {
     va_list var;
     va_start(var, format);
@@ -214,7 +213,7 @@ void uiScreen::display(int font_size, int y, int x, int just, int w, const char 
 // loop()
 //---------------------------------------
 
-void uiScreen::loop()
+void tempScreen::loop()
 {
     uint32_t now = millis();
 
@@ -246,7 +245,7 @@ void uiScreen::loop()
             showScreen();
     }
 
-    ui_buttons.loop();
+    iot_buttons.loop();
 }
 
 
@@ -255,15 +254,15 @@ void uiScreen::loop()
 // setScreen() && init_edit_value()
 //-----------------------------------
 
-void uiScreen::setScreen(int screen_num)
+void tempScreen::setScreen(int screen_num)
 {
-    DBG_SCREEN("uiScreen::setScreen(%d)",screen_num);
+    DBG_SCREEN("tempScreen::setScreen(%d)",screen_num);
     m_screen_num = screen_num;
     init_edit_value();
 }
 
 
-void uiScreen::init_edit_value()
+void tempScreen::init_edit_value()
 {
     m_iot_value = 0;
     m_iot_style = 0;
@@ -361,7 +360,7 @@ void uiScreen::init_edit_value()
             !strcmp(m_value_id,ID_BACKLIGHT_SECS) ||
             !strcmp(m_value_id,ID_SETPOINT_LOW) ||
             !strcmp(m_value_id,ID_SETPOINT_HIGH);
-        ui_buttons.setRepeatMask(m_use_repeat ? (0x2 | 0x4) : 0);
+        iot_buttons.setRepeatMask(m_use_repeat ? (0x2 | 0x4) : 0);
     }
 }
 
@@ -371,11 +370,11 @@ void uiScreen::init_edit_value()
 // onButton
 //-----------------------------------
 
-bool uiScreen::onButton(int button_num, int event_type)
+bool tempScreen::onButton(int button_num, int event_type)
     // called from uiButtons::loop()
 {
     if (DEBUG_SCREEN > 1)
-        DBG_SCREEN("uiScreen::onButton(%d,%d)",button_num,event_type);
+        DBG_SCREEN("tempScreen::onButton(%d,%d)",button_num,event_type);
 
     // eat the keystroke to turn on backlight
 
@@ -469,7 +468,7 @@ bool uiScreen::onButton(int button_num, int event_type)
 // showScreen
 //-----------------------------------
 
-void uiScreen::showScreen()
+void tempScreen::showScreen()
 {
     bool do_display = false;
     bool screen_changed = false;

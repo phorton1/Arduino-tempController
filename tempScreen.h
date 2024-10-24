@@ -1,5 +1,5 @@
 //-----------------------------------------
-// uiScreen.h
+// tempScreen.h
 //-----------------------------------------
 
 #pragma once
@@ -9,11 +9,11 @@
 #define UI_JUST_RIGHT       2
 
 
-class uiScreen
+class tempScreen
 {
     public:
 
-        uiScreen() {}
+        tempScreen() {}
         void init();
 
         void loop();
@@ -57,6 +57,6 @@ class uiScreen
 };
 
 
-extern uiScreen ui_screen;
+extern tempScreen temp_screen;
 
 

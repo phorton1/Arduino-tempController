@@ -3,7 +3,7 @@
 //-----------------------------------------------------------
 
 #include "controller.h"
-#include "uiScreen.h"
+#include "tempScreen.h"
 #include "tempVolts.h"
 #include <myTempSensor.h>
 #include <myIOTLog.h>
@@ -78,7 +78,7 @@ void tempController::setup()
     LOGD("tempController::setup(%s) started",getVersion());
     proc_entry();
 
-	ui_screen.init();
+	temp_screen.init();
 
 	myIOTDevice::setup();
 
@@ -117,7 +117,7 @@ void tempController::setup()
 
     proc_leave();
 
-    ui_screen.backlight(1);
+    temp_screen.backlight(1);
 
     LOGD("tempController::setup(%s) completed",getVersion());
 }
@@ -141,7 +141,7 @@ void tempController::stateTask(void *param)
 void tempController::onBacklightChanged(const myIOTValue *value, int val)
 {
 	LOGU("onBacklightChanged(%d)",val);
-	ui_screen.backlight(1);
+	temp_screen.backlight(1);
 }
 
 
@@ -322,7 +322,7 @@ void tempController::loop()
 
 	// handle UI
 
-	ui_screen.loop();
+	temp_screen.loop();
 
 	// publish changes every couple of seconds
 	// and log temperature/rpm changes
