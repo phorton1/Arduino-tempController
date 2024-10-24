@@ -36,7 +36,6 @@ bool cur_relay_on;
 	#define NUM_MEM_RECS	500
 		// 4K - enough for about 24 hours
 
-
 	void addTempRecord(float temperature, bool relay_on);
 		// forward
 
@@ -46,7 +45,7 @@ bool cur_relay_on;
 	};
 
 	myIOTDataLog data_log("tempData",2,temp_cols,0);
-		// 0 = debug_send_data LEVEL
+		// 0 = debug_send_data level
 
 	myIOTWidget_t tempWidget = {
 		"tempWidget",
@@ -296,7 +295,6 @@ void tempController::stateMachine()
 		setRelay(0);
 	}
 
-
 }	// stateMachine()
 
 
@@ -312,7 +310,6 @@ float round1(float val)
 		val > 0 ? 0.05 :
 		val < 0 ? -0.05 :
 		0.0;
-
 	int ival = val * 10;
 	return ((float)ival) / 10.0;
 }

@@ -2,9 +2,8 @@
 // uiScreen.cpp
 //-----------------------------------------
 
-
 #define WITH_SSD1306    0       // small i2c OLED display
-    // With 4 lines of 12 reasonable, or characters of text
+    // With 4 lines of 12 reasonable characters of text
 
 
 #include "controller.h"
@@ -34,12 +33,10 @@
 #define REFRESH_MS          30
 #define ACTIVITY_TIMEOUT    15000
 
-#define SHOW                1
-#define WAIT                0
-
 #define FONT1               1
 #define FONT2               2
 #define FONT3               3
+#define WIDTH(c)            (c * CHAR_WIDTH)
 
 
 
@@ -98,22 +95,22 @@ Adafruit_SSD1306 oled(SCREEN_WIDTH, SCREEN_HEIGHT);  // default Wire; no reset p
         int val = rtc_get_reset_reason(0);
         switch (val)
         {
-            case  0 : return "NO_MEAN        ";    /* no meaning? */
-            case  1 : return "POWERON_RESET  ";    /**<1, Vbat power on reset*/
-            case  3 : return "SW_RESET       ";    /**<3, Software reset digital core*/
-            case  4 : return "OWDT_RESET     ";    /**<4, Legacy watch dog reset digital core*/
-            case  5 : return "DEEPSLEEP_RESET";    /**<5, Deep Sleep reset digital core*/
-            case  6 : return "SDIO_RESET     ";    /**<6, Reset by SLC module, reset digital core*/
-            case  7 : return "TG0WDT_SYS_RESE";    /**<7, Timer Group0 Watch dog reset digital core*/
-            case  8 : return "TG1WDT_SYS_RESE";    /**<8, Timer Group1 Watch dog reset digital core*/
-            case  9 : return "RTCWDT_SYS_RESE";    /**<9, RTC Watch dog Reset digital core*/
-            case 10 : return "INTRUSION_RESET";    /**<10, Instrusion tested to reset CPU*/
-            case 11 : return "TGWDT_CPU_RESET";    /**<11, Time Group reset CPU*/
-            case 12 : return "SW_CPU_RESET   ";    /**<12, Software reset CPU*/
-            case 13 : return "RTCWDT_CPU_RESE";    /**<13, RTC Watch dog Reset CPU*/
-            case 14 : return "EXT_CPU_RESET  ";    /**<14, for APP CPU, reseted by PRO CPU*/
-            case 15 : return "RTCWDT_BROWN_OU";    /**<15, Reset when the vdd voltage is not stable*/
-            case 16 : return "RTCWDT_RTC_RESE";    /**<16, RTC Watch dog reset digital core and rtc module*/
+            case  0 : return "UNKNOWN_RESET";       /* no meaning? */
+            case  1 : return "POWERON_RESET";       /* 1, Vbat power on reset*/
+            case  3 : return "SW_RESET";            /* 3, Software reset digital core*/
+            case  4 : return "OWDT_RESET";          /* 4, Legacy watch dog reset digital core*/
+            case  5 : return "DEEPSLEEP_RESET";     /* 5, Deep Sleep reset digital core*/
+            case  6 : return "SDIO_RESET";          /* 6, Reset by SLC module, reset digital core*/
+            case  7 : return "TG0WDT_RESET";        /* 7, Timer Group0 Watch dog reset digital core*/
+            case  8 : return "TG1WDT_RESET";        /* 8, Timer Group1 Watch dog reset digital core*/
+            case  9 : return "RTCWDT_RESET";        /* 9, RTC Watch dog Reset digital core*/
+            case 10 : return "INTRUSION_RESET";     /* 10, Instrusion tested to reset CPU*/
+            case 11 : return "TGWDT_CPU_RESET";     /* 11, Time Group reset CPU*/
+            case 12 : return "SW_CPU_RESET";        /* 12, Software reset CPU*/
+            case 13 : return "RTCWDT_CPU_RESE";     /* 13, RTC Watch dog Reset CPU*/
+            case 14 : return "EXT_CPU_RESET";       /* 14, for APP CPU, reseted by PRO CPU*/
+            case 15 : return "RTCWDT_BROWN_OUT";    /* 15, Reset when the vdd voltage is not stable*/
+            case 16 : return "RTCWDT_RTC_RESET";    /* 16, RTC Watch dog reset digital core and rtc module*/
             default :
             {
                 static char reason_buf[32];
@@ -138,18 +135,20 @@ void uiScreen::init()
     oled.begin(SSD1306_SWITCHCAPVCC, OLED_I2C_ADDR);
     oled.display();  // show built in Adafruit splash screen
     delay(1000);
-    clear();
+    oled.clearDisplay();
 
     backlight(1);
 
     #if SHOW_BOOT_REASON
-        oled.clearDisplay();
-        display(SHOW,FONT1,0,0,"%s",bootReason());
+
+        display(FONT1,0,0,UI_JUST_CENTER,SCREEN_WIDTH,bootReason());
+        oled.display();
         delay(2000);
     #endif
 
-    display(WAIT,FONT1,0,32,"%s",tempController::getDeviceType());
-    display(SHOW,FONT1,0,48,"%s",tempController::getVersion());
+    display(FONT1,22,0,UI_JUST_CENTER,SCREEN_WIDTH,tempController::getDeviceType());
+    display(FONT1,38,0,UI_JUST_CENTER,SCREEN_WIDTH,tempController::getVersion());
+    oled.display();
     delay(2000);
 }
 
@@ -157,7 +156,7 @@ void uiScreen::init()
 // static
 bool uiScreen::buttonStub(int button_num, int event_type)
 {
-    ui_screen.onButton(button_num,event_type);
+    return ui_screen.onButton(button_num,event_type);
 }
 
 
@@ -165,11 +164,7 @@ bool uiScreen::buttonStub(int button_num, int event_type)
 // utilities
 //------------------------------
 
-void uiScreen::clear()
-{
-    oled.clearDisplay();
-    oled.display();
-}
+
 
 
 void uiScreen::backlight(int val)
@@ -181,7 +176,7 @@ void uiScreen::backlight(int val)
 }
 
 
-void uiScreen::display(bool do_display, int font_size, int x, int y, const char *format, ...)
+void uiScreen::display(int font_size, int y, int x, int just, int w, const char *format, ...)
 {
     va_list var;
     va_start(var, format);
@@ -191,12 +186,26 @@ void uiScreen::display(bool do_display, int font_size, int x, int y, const char 
     int len = strlen(buffer);
     buffer[len] = 0;
 
-    oled.setTextSize(font_size);        // Font size
-    oled.setTextColor(WHITE,BLACK);     // White on Black text
+    int h = CHAR_HEIGHT * font_size;
+    oled.fillRect(x,y,w,h,BLACK);
+
+    if (len)
+    {
+        if (just != UI_JUST_LEFT)
+        {
+            int used = len * CHAR_WIDTH * font_size;
+            int space = w - used;
+            if (space < 0) space = 0;
+            if (just == UI_JUST_CENTER)
+                space /= 2;
+            x += space;
+        }
+    }
+
+    oled.setTextSize(font_size);
+    oled.setTextColor(WHITE);
     oled.setCursor(x,y);                // Start at top-left corner
     oled.print(buffer);
-    if (do_display)
-        oled.display();  
 }
 
 
@@ -372,9 +381,12 @@ bool uiScreen::onButton(int button_num, int event_type)
 
     if (!m_backlight)
     {
+        setScreen(SCREEN_MAIN);
+        showScreen();
         backlight(1);
         return true;
     }
+
     m_activity_time = millis();
 
     if (button_num == 0)
@@ -459,77 +471,87 @@ bool uiScreen::onButton(int button_num, int event_type)
 
 void uiScreen::showScreen()
 {
+    bool do_display = false;
     bool screen_changed = false;
     static int last_screen_num = -1;
     if (last_screen_num != m_screen_num)
     {
         last_screen_num = m_screen_num;
+        do_display = true;
         screen_changed = true;
+        oled.clearDisplay();
     }
 
+    // Since we always need the temperature, we prepare it here
+
+    bool faren = controller->getEnum(ID_DEGREE_TYPE);
+    float temp_float = controller->_temperature;
+    int temp_err = controller->m_temp_error;
+    String temp_str =
+        temp_err ? "ERR" + String(temp_err) :
+        faren ? String(centigradeToFarenheit(temp_float),1) + "F" :
+        String(temp_float,1) + "C";
+
+    // Top Line (Yellow)  16 pixels high
+    // Always shows ON on left if relay is on
+    // On SCREEN_MAIN, shows the WiFi status on the right
+    // On other screens shows the temperature on the right
+
+    String top_left = controller->_relay_on ? "ON" : "";
+    String top_right;
     if (m_screen_num == SCREEN_MAIN)
     {
-        // Size 2
-        //      Mode               Off_,HIGH,LOW,FORCE
-        //      WIFI State         WOFF,STA,AP,APS,WERR
-        // Size 3
-        //      Temperature        ###F/C  ERR1..ERR7
-        //      * == ON
-
-        static String last_wifi;
-        static float last_temp;
-        static int last_error;
-        static bool last_on;
-        static bool last_faren;
-
-        bool faren = controller->getEnum(ID_DEGREE_TYPE);
-
-        const char *wifi = "WOFF";
+        top_right = "WOFF";
         if (controller->getBool(ID_WIFI))
         {
             iotConnectStatus_t mode = controller->getConnectStatus();
             if (mode == IOT_CONNECT_ALL)
-                wifi = " APS";
+                "APS";
             else if (mode == IOT_CONNECT_AP)
-                wifi = "  AP";
+                top_right = "AP";
             else if (mode == IOT_CONNECT_STA)
-                wifi = " STA";
+                top_right = "STA";
             else
-                wifi = "WERR";
+                top_right = "WERR";
         }
 
-        if (screen_changed ||
-            last_wifi != wifi ||
-            last_faren != faren ||
-            last_temp != controller->_temperature ||
-            last_error != controller->m_temp_error ||
-            last_on != controller->_relay_on)
+        static String s_temp_str;
+        if (screen_changed || s_temp_str != temp_str)
         {
-            last_wifi = wifi;
-            last_faren = faren;
-            last_temp = controller->_temperature;
-            last_error = controller->m_temp_error;
-            last_on = controller->_relay_on;
+            s_temp_str = temp_str;
+            display(FONT3,16+6,0,UI_JUST_CENTER,SCREEN_WIDTH,temp_str.c_str());
+            do_display = true;
+        }
 
-            oled.clearDisplay();
-
-            if (last_on)
-                display(WAIT,FONT2,0,0,last_on ? "ON" : "");
-            display(WAIT,FONT2,SCREEN_WIDTH-1-CHAR_WIDTH*2*4,0,wifi);
-
-            char buf[12];
-
-            sprintf(buf,"%0.1f%s",
-                faren ? centigradeToFarenheit(last_temp) : last_temp,
-                faren ? "F" : "C");
-            int x = (SCREEN_WIDTH - strlen(buf) * CHAR_WIDTH * 3) / 2;
-            if (x < 0) x = 0;
-            display(WAIT,FONT3,x,16 + 12,buf);
-
-            oled.display();
+        static String s_time_str;
+        String time_str = timeToString(time(NULL));
+        if (screen_changed || s_time_str != time_str)
+        {
+            s_time_str = time_str;
+            display(FONT1,SCREEN_HEIGHT-CHAR_HEIGHT-1,0,UI_JUST_CENTER,SCREEN_WIDTH,time_str.c_str());
+            do_display = true;
         }
     }
-    else if (m_screen_num == SCREEN_IP_ADDRESS)
+    else    // show temperature as top right
+    {
+        top_right = temp_str;
+    }
+
+    static String s_top_left;
+    static String s_top_right;
+    if (screen_changed ||
+        s_top_left != top_left ||
+        s_top_right != top_right)
+    {
+        s_top_left = top_left;
+        s_top_right = top_right;
+        display(FONT2,0,0,UI_JUST_LEFT,WIDTH(2*2),top_left.c_str());
+        display(FONT2,0,WIDTH(2*2),UI_JUST_RIGHT,SCREEN_WIDTH-WIDTH(2*2)-1,top_right.c_str());
+        do_display = true;
+
+    }
+
+    if (m_screen_num == SCREEN_IP_ADDRESS)
     {
         if (screen_changed)
         {
@@ -542,9 +564,8 @@ void uiScreen::showScreen()
                 mode == WIFI_MODE_APSTA ? "WIFI_AP_STA" :
                 "WIFI_ERROR";
 
-            oled.clearDisplay();
-            display(WAIT,FONT1,0,16,"%s",mode_str);
-            display(SHOW,FONT1,0,32,"%16s",mode?controller->getString(ID_DEVICE_IP).c_str():"");
+            display(FONT2,22,0,UI_JUST_CENTER,SCREEN_WIDTH,mode_str);
+            display(FONT1,44,0,UI_JUST_CENTER,SCREEN_WIDTH,mode?controller->getString(ID_DEVICE_IP).c_str():"");
         }
     }
     else if (m_screen_num == SCREEN_POWER)
@@ -560,9 +581,11 @@ void uiScreen::showScreen()
             volts_12v = controller->_volts_12v;
             volts_3v = controller->_volts_3v;
 
-            oled.clearDisplay();
-            display(WAIT,FONT1,0,16,"Power Supp %4.1fV",volts_12v);
-            display(SHOW,FONT1,0,32,"ESP32 3v   %4.1fV",volts_3v);
+            display(FONT2,22,0,UI_JUST_LEFT,WIDTH(5*2),"Power");
+            display(FONT2,44,0,UI_JUST_LEFT,WIDTH(5*2),"ESP32");
+            display(FONT2,22,WIDTH(5*2),UI_JUST_RIGHT,SCREEN_WIDTH-WIDTH(5*2)-1,"%4.1fV",volts_12v);
+            display(FONT2,44,WIDTH(5*2),UI_JUST_RIGHT,SCREEN_WIDTH-WIDTH(5*2)-1,"%4.1fV",volts_3v);
+            do_display = true;
         }
     }
 
@@ -570,30 +593,37 @@ void uiScreen::showScreen()
 
     else if (m_iot_value)
     {
-        if (screen_changed || m_last_value != m_edit_value)
+        static bool last_dirty;
+        bool dirty = m_edit_value != m_initial_value;
+        if (screen_changed ||
+            m_last_value != m_edit_value ||
+            last_dirty != dirty)
         {
-            oled.clearDisplay();
+            last_dirty = dirty;
             m_last_value = m_edit_value;
-            display(WAIT,FONT1,0,16,m_value_id);
+            display(FONT1,22,0,UI_JUST_LEFT,SCREEN_WIDTH,m_iot_type == VALUE_TYPE_COMMAND?"":m_value_id);
             if (m_iot_type == VALUE_TYPE_COMMAND)
-                display(WAIT,FONT1,0,32,"%16s","confirm?");
+                display(FONT2,30,0,UI_JUST_RIGHT,SCREEN_WIDTH,"%s?",m_value_id);
             else if (m_iot_type == VALUE_TYPE_ENUM)
-                display(WAIT,FONT1,0,32,"%16s",m_iot_value->getDesc()->enum_range.allowed[m_edit_value]);
+                display(FONT2,36,0,UI_JUST_RIGHT,SCREEN_WIDTH,m_iot_value->getDesc()->enum_range.allowed[m_edit_value]);
             else if (m_iot_style & VALUE_STYLE_TEMPERATURE)
-                display(WAIT,FONT1,0,32,"%15d%s",m_edit_value,m_degree_type?"F":"C");
+                display(FONT2,36,0,UI_JUST_RIGHT,SCREEN_WIDTH,"%d%s",m_edit_value,m_degree_type?"F":"C");
             else if (m_iot_type == VALUE_TYPE_BOOL)
-                display(WAIT,FONT1,0,32,"%16s",m_edit_value?"On":"Off");
+                display(FONT2,36,0,UI_JUST_RIGHT,SCREEN_WIDTH,m_edit_value?"On":"Off");
             else if (m_iot_type == VALUE_TYPE_STRING)
-                display(WAIT,FONT1,0,32,"%16s",m_iot_value->getString().c_str());
+               display(FONT2,36,0,UI_JUST_RIGHT,SCREEN_WIDTH,m_iot_value->getString().c_str());
             else
-                display(WAIT,FONT1,0,32,"%16d",m_edit_value);
+               display(FONT2,36,0,UI_JUST_RIGHT,SCREEN_WIDTH,"%d",m_edit_value);
 
-            bool dirty = m_edit_value != m_initial_value;
-            if (dirty)
-                display(WAIT,FONT1,0,48,"%s",dirty ? "CHANGED" : "");
-            oled.display();
+            display(FONT1,56,0,UI_JUST_LEFT,SCREEN_WIDTH,dirty ?
+                m_iot_type == VALUE_TYPE_COMMAND ? "CONFIRM" : "SAVE" : "");
+            do_display = true;
         }
     }
+
+    if (do_display)
+        oled.display();
+
 }
 
 

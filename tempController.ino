@@ -165,7 +165,7 @@ void setup()
 
     controller->setup();
 
-    LOGU("fridgeController.ino setup() finished",0);
+    LOGU("tempController.ino setup() finished",0);
 }
 
 

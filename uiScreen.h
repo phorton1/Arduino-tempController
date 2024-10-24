@@ -4,6 +4,10 @@
 
 #pragma once
 
+#define UI_JUST_LEFT        0
+#define UI_JUST_CENTER      1
+#define UI_JUST_RIGHT       2
+
 
 class uiScreen
 {
@@ -43,8 +47,7 @@ class uiScreen
         uint32_t m_activity_time;
         uint32_t m_last_refresh;
 
-        void clear();
-        void display(bool do_display, int font_size, int x, int y, const char *format, ...);
+        void display(int font_size, int y, int x, int just, int w, const char *format, ...);
         void setScreen(int num);
         void init_edit_value();
         void showScreen();

@@ -9,11 +9,11 @@
 
 
 #define WITH_MEM_HISTORY	1
-	// attempt to store history in RAM
+	// store limited history in RAM
 #define WITH_FAKE_TEMPS		1
 	// to allow testing on bare ESP32
 #define WITH_ONBOARD_LED	1
-	// shows blue if !wifi StATION
+	// shows blue if !wifi STATION
 
 
 //=========================================================
@@ -28,9 +28,9 @@
 #define PIN_BUTTON3			13
 
 #define PIN_S_12V			34		// sense 12V
-#define PIN_S_3V			39		// sense buck 5V power supply
+#define PIN_S_3V			39		// sense buck 3.3V power supply
 
-#define PIN_RELAY			32		// diagnostic diode on
+#define PIN_RELAY			32		// Actually, a MOSFET turns FAN on
 
 
 //------------------------
