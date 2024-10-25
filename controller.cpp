@@ -189,6 +189,7 @@ void tempController::setRelay(bool on)
 	{
 		cur_temperature = 26.67;
 		last_fake = millis();
+		m_temp_error = 0;
 	}
 
 	void tempController::doFake()
@@ -213,6 +214,7 @@ void tempController::setRelay(bool on)
 		if (cur_temperature < _fake_min)
 			cur_temperature = _fake_min;
 
+		m_temp_error = 0;
 	}
 #endif
 
