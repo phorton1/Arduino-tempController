@@ -27,6 +27,7 @@
 
 	var DEGREE_TYPE = 0;
 	var navbar_height = 0;
+	var device_uuid = '';
 
 	function centigradeToFarenheit(centigrade)
 	{
@@ -45,6 +46,16 @@
 		
 	function startWidget()
 	{
+		// get the device uuid from the document.location
+
+		const re = /uuid=(.*)($|&)/;
+		var match = re.exec(document.location);
+		if (match.length>1)
+			device_uuid = match[1];
+
+		// get the widget html
+		// which will chain to doChart()
+
 		var xhr_html = new XMLHttpRequest();
 		xhr_html.onreadystatechange = function()
 		{
@@ -55,7 +66,8 @@
 				doChart('tempData');
 			}
 		}
-		xhr_html.open('GET', '/custom/chart_html/tempData?width=800&height=400&refresh=0', true);
+		xhr_html.open('GET', '/custom/chart_html/tempData?width=800&height=400&refresh=0' +
+			'&uuid=' + device_uuid, true);
 		xhr_html.send();
 
 		onChartResize();
