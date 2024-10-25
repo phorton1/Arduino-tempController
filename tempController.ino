@@ -1,5 +1,6 @@
 
 #include "controller.h"
+#include "tempToolTips.h"
 #include <myTempSensor.h>
 #include <myIOTLog.h>
 
@@ -160,7 +161,7 @@ void setup()
     controller = new tempController();
     controller->addValues(temp_values,NUM_TEMP_VALUES);
 	controller->setTabLayouts(dash_items,config_items);
-	// controller->addDerivedToolTips(temp_tooltips);
+	controller->addDerivedToolTips(temp_tooltips);
     LOGU("tempController.ino setup() started on core(%d)",xPortGetCoreID());
 
     controller->setup();
