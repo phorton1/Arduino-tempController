@@ -5,7 +5,7 @@
 #include "controller.h"
 #include "tempScreen.h"
 #include "tempVolts.h"
-#include <myTempSensor.h>
+#include <myIOTTempSensor.h>
 #include <myIOTLog.h>
 
 
@@ -17,7 +17,7 @@
 //--------------------------------------
 
 tempController *controller;
-myTempSensor t_sense(PIN_ONE_WIRE);
+myIOTTempSensor t_sense(PIN_ONE_WIRE);
 
 int tempController::m_temp_error;
 
@@ -355,7 +355,7 @@ void tempController::loop()
 		{
 			status = "TEMP_ERROR(" +
 				String(m_temp_error) + ") " +
-				String(myTempSensor::errString(m_temp_error));
+				String(myIOTTempSensor::errString(m_temp_error));
 		}
 		if (_status_str != status)
 			setString(ID_STATUS,status);

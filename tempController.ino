@@ -1,7 +1,7 @@
 
 #include "controller.h"
 #include "tempToolTips.h"
-#include <myTempSensor.h>
+#include <myIOTTempSensor.h>
 #include <myIOTLog.h>
 
 
@@ -61,7 +61,7 @@ const valDescriptor temp_values[] =
 	{ID_MODE,				VALUE_TYPE_ENUM,	VALUE_STORE_PREF,		VALUE_STYLE_NONE,		(void *) &tempController::_mode,    		NULL, 	{ .enum_range = { 0, tempModes }} },
 	{ID_SETPOINT_HIGH,      VALUE_TYPE_FLOAT,	VALUE_STORE_PREF,		VALUE_STYLE_TEMPERATURE,(void *) &tempController::_setpoint_high,   (void *) tempController::onSetPointChanged,	{ .float_range	= {50,	-200+MIN_SETPOINT_DIF,	200+MIN_SETPOINT_DIF}},	},
 	{ID_SETPOINT_LOW,       VALUE_TYPE_FLOAT,	VALUE_STORE_PREF,		VALUE_STYLE_TEMPERATURE,(void *) &tempController::_setpoint_low,    (void *) tempController::onSetPointChanged,	{ .float_range	= {30,	-200-MIN_SETPOINT_DIF,	200-MIN_SETPOINT_DIF}},	},
-	{ID_TEMP_SENSE_ID,    	VALUE_TYPE_STRING,	VALUE_STORE_PREF,		VALUE_STYLE_NONE,		(void *) &tempController::_temp_sense_id, 	NULL,	MY_TSENSOR_03 },
+	{ID_TEMP_SENSE_ID,    	VALUE_TYPE_STRING,	VALUE_STORE_PREF,		VALUE_STYLE_NONE,		(void *) &tempController::_temp_sense_id, 	NULL,	IOT_TSENSOR_03 },
 	{ID_SENSE_SECS,    		VALUE_TYPE_INT,		VALUE_STORE_PREF,		VALUE_STYLE_NONE,		(void *) &tempController::_sense_secs, 		NULL,	{ .int_range	= {10,  0,		300}},  },
 	{ID_CALIB_VOLTS_12V,    VALUE_TYPE_FLOAT,	VALUE_STORE_PREF,		VALUE_STYLE_NONE,		(void *) &tempController::_calib_volts_12v, NULL,	{ .float_range	= {1,	0.5,	1.5}},	},
 	{ID_CALIB_VOLTS_3V,     VALUE_TYPE_FLOAT,	VALUE_STORE_PREF,		VALUE_STYLE_NONE,		(void *) &tempController::_calib_volts_3v,  NULL,	{ .float_range	= {1,	0.5,	1.5}},	},
