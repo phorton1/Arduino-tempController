@@ -535,4 +535,6 @@ F 3 "" H 1350 2850 50  0001 C CNN
 $EndComp
 Text Notes 1650 1200 0    50   ~ 0
 After MUCH trial and tribulation, having discovered that these\nideaSpark boards have a problem with Wifi and the Serial Port,\nI empirically determined, late, and implemented, powering the\nESP32 via 3.3V.  Using 5V StationMode doggedly did not work \nstand-alone, but only with a Serial Port open and the USB connected.
+Text Notes 1500 3400 1    50   ~ 0
+Brown\nOrange\nRed\nBlack\nWire
 $EndSCHEMATC
