@@ -370,8 +370,8 @@ void tempController::loop()
 
 		if (_volts_12v != temp_volts._volts_12V)
 			setFloat(ID_VOLTS_12V,temp_volts._volts_12V);
-		if (_volts_3v != temp_volts._volts_3V)
-			setFloat(ID_VOLTS_3V,temp_volts._volts_3V);
+		if (_volts_5v != temp_volts._volts_5V)
+			setFloat(ID_VOLTS_5V,temp_volts._volts_5V);
 
 		#if WITH_MEM_HISTORY
 			if (do_log)

@@ -28,7 +28,7 @@
 #define PIN_BUTTON3			13
 
 #define PIN_S_12V			34		// sense 12V
-#define PIN_S_3V			39		// sense buck 3.3V power supply
+#define PIN_S_5V			39		// sense buck 5V power supply
 
 #define PIN_RELAY			32		// Actually, a MOSFET turns FAN on
 
@@ -58,14 +58,14 @@
 #define ID_TEMP_SENSE_ID            "TEMP_SENSE_ID"
 #define ID_SENSE_SECS          		"SENSE_SECS"
 #define ID_CALIB_VOLTS_12V          "CALIB_VOLTS_12V"
-#define ID_CALIB_VOLTS_3V           "CALIB_VOLTS_3V"
+#define ID_CALIB_VOLTS_5V           "CALIB_VOLTS_5V"
 #define ID_BACKLIGHT_SECS			"BACKLIGHT_SECS"
 
 #define ID_STATUS					"STATUS"
 #define ID_TEMPERATURE              "TEMPERATURE"
 #define ID_RELAY_ON					"RELAY_ON"
 #define ID_VOLTS_12V				"VOLTS_12V"
-#define ID_VOLTS_3V					"VOLTS_3V"
+#define ID_VOLTS_5V					"VOLTS_5V"
 #define ID_CHART_LINK				"CHART"
 
 // fake compressor config values
@@ -100,7 +100,7 @@ public:
 	static String	_temp_sense_id;
 	static int		_sense_secs;
 	static float	_calib_volts_12v;
-	static float	_calib_volts_3v;
+	static float	_calib_volts_5v;
 	static int		_backlight_secs;
 
 #if WITH_FAKE_TEMPS
@@ -120,7 +120,7 @@ public:
 	static float	_temperature;
 	static bool		_relay_on;
 	static float	_volts_12v;
-	static float	_volts_3v;
+	static float	_volts_5v;
 #if WITH_MEM_HISTORY
 	static String 	_chart_link;
 #endif
