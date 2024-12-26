@@ -13,7 +13,7 @@
 //---------------------------------------------
 
 #define VOLTAGE_12V			0
-#define VOLTAGE_3V			1
+#define VOLTAGE_5V			1
 
 #define VOLTAGE_INTERVAL	100
 #define NUM_VOLTAGES		2
@@ -30,7 +30,7 @@ tempVolts temp_volts;
 void tempVolts::init()
 {
 	pinMode(PIN_S_12V,INPUT_PULLUP);
-	pinMode(PIN_S_3V,INPUT_PULLUP);
+	pinMode(PIN_S_5V,INPUT_PULLUP);
 }
 
 
@@ -94,21 +94,21 @@ void tempVolts::sense()
 	// called at TEMP_SENSE_SECS
 {
 	int val12 = analogRead(PIN_S_12V);
-	int val3 = analogRead(PIN_S_3V);
+	int val5 = analogRead(PIN_S_5V);
 	#if DEBUG_VOLTS
-		LOGD("sample 12V(%d) 3V(%d)",val12,val3);
+		LOGD("sample 12V(%d) 5V(%d)",val12,val35);
 	#endif
 
 	#define CALIB_12V		(12.0 / 2.13)
-	#define CALIB_3V		(3.3 / 1.04)
+	#define CALIB_5V		(5.0 / 2.525)
 
 	float volt_12V = readToVolts(val12) * CALIB_12V;
-	float volt_3V = readToVolts(val3) * CALIB_3V;
+	float volt_5V = readToVolts(val5) * CALIB_5V;
 
 	addVoltSample(VOLTAGE_12V,volt_12V);
-	addVoltSample(VOLTAGE_3V,volt_3V);
+	addVoltSample(VOLTAGE_5V,volt_5V);
 	_volts_12V = getVoltValue(VOLTAGE_12V) * controller->_calib_volts_12v;
-	_volts_3V = getVoltValue(VOLTAGE_3V) * controller->_calib_volts_3v;
+	_volts_5V = getVoltValue(VOLTAGE_5V) * controller->_calib_volts_5v;
 
 	cur_volt_circ_idx = (cur_volt_circ_idx+1) % NUM_VOLT_SAMPLES;
 	volt_circ_started = 1;

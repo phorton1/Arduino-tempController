@@ -571,19 +571,19 @@ void tempScreen::showScreen()
     {
         char v_buf[48];
         static float volts_12v;
-        static float volts_3v;
+        static float volts_5v;
 
         if (screen_changed ||
             volts_12v != controller->_volts_12v ||
-            volts_3v != controller->_volts_3v)
+            volts_5v != controller->_volts_5v)
         {
             volts_12v = controller->_volts_12v;
-            volts_3v = controller->_volts_3v;
+            volts_5v = controller->_volts_5v;
 
             display(FONT2,22,0,UI_JUST_LEFT,WIDTH(5*2),"Power");
             display(FONT2,44,0,UI_JUST_LEFT,WIDTH(5*2),"ESP32");
             display(FONT2,22,WIDTH(5*2),UI_JUST_RIGHT,SCREEN_WIDTH-WIDTH(5*2)-1,"%4.1fV",volts_12v);
-            display(FONT2,44,WIDTH(5*2),UI_JUST_RIGHT,SCREEN_WIDTH-WIDTH(5*2)-1,"%4.1fV",volts_3v);
+            display(FONT2,44,WIDTH(5*2),UI_JUST_RIGHT,SCREEN_WIDTH-WIDTH(5*2)-1,"%4.1fV",volts_5v);
             do_display = true;
         }
     }

@@ -25,9 +25,9 @@ static const char *temp_tooltips[] = {
 	ID_CALIB_VOLTS_12V,
 		"default(1.0) - "
 		"Calibration factor used in reporting the 12V power supply",
-	ID_CALIB_VOLTS_3V,
+	ID_CALIB_VOLTS_5V,
 		"default(1.0) - "
-		"Calibration factor used in reporting the 3.3V supply from the buck converter to the ESP32",
+		"Calibration factor used in reporting the 5V supply from the buck converter to the ESP32",
 	ID_BACKLIGHT_SECS,
 		"default(15) max(120) -  "
 		"How long the screen back light will stay on after booting or any button press. "
@@ -41,8 +41,8 @@ static const char *temp_tooltips[] = {
 		"Set to 1 when the relay is turned on, 0 when it is turned off",
 	ID_VOLTS_12V,
 		"The measured voltage of the input 12V power supply for the controller",
-	ID_VOLTS_3V,
-		"The measured voltage of the 3.3V supply from the buck convertor to the ESP32",
+	ID_VOLTS_5V,
+		"The measured voltage of the 5V supply from the buck convertor to the ESP32",
 
 #if WITH_FAKE_TEMPS
 	ID_USE_FAKE,		"Whether to use the fake tempeerature generator, or not. For testing on a bare ESP32 with no sensor",
