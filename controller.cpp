@@ -428,7 +428,7 @@ void tempController::loop()
 		{
 			temp_tail++;
 			if (temp_tail >= NUM_MEM_RECS)
-				temp_tail = 0;\
+				temp_tail = 0;
 		}
 
 		tempMem_t *temp = &temp_mem[temp_head];
