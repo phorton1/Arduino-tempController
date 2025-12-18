@@ -370,16 +370,13 @@ bool sendOne(uint32_t cutoff, tempMem_t *in_rec)
 String tempController::onCustomLink(const String &path,  const char **mime_type)
 {
 	LOGD("tempController::onCustomLink(%s)",path.c_str());
-	if (path.startsWith("chart_html"))
-	{
-		int period = myiot_web_server->getArg("period",86400);	// day default
-		return data_log.getChartHTML(period,true);
-			// true = with_degrees temperature converter
-	}
-	else if (path.startsWith("chart_header"))
+	if (path.startsWith("chart_header"))
 	{
 		*mime_type = "application/json";
-		return data_log.getChartHeader();
+		return data_log.getChartHeader(86400,1);
+			// default_period = 86400 == 1 day
+			// 1 = with_degrees
+			// default param uses default series colors
 	}
 	else if (path.startsWith("chart_data") ||
 			 path.startsWith("update_chart_data"))
