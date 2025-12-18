@@ -7,11 +7,6 @@
 
 #include <myIOTDevice.h>
 
-
-#define WITH_MEM_HISTORY	1
-	// store limited history in RAM
-#define WITH_FAKE_TEMPS		1
-	// to allow testing on bare ESP32
 #define WITH_ONBOARD_LED	1
 	// shows blue if !wifi STATION
 
@@ -68,14 +63,6 @@
 #define ID_VOLTS_5V					"VOLTS_5V"
 #define ID_CHART_LINK				"CHART"
 
-// fake compressor config values
-
-#define ID_USE_FAKE					"USE_FAKE"
-#define ID_RESET_FAKE				"RESET_FAKE"
-#define ID_FAKE_MIN					"FAKE_MIN"
-#define ID_FAKE_MAX					"FAKE_MAX"
-#define ID_FAKE_OFF_DSEC			"FAKE_OFF_DSEC"	// degrees per second when relay off
-#define ID_FAKE_ON_DSEC				"FAKE_ON_DSEC"	// degrees per second when relay on
 
 
 extern enumValue tempModes[];
@@ -103,17 +90,6 @@ public:
 	static float	_calib_volts_5v;
 	static int		_backlight_secs;
 
-#if WITH_FAKE_TEMPS
-	static void doFake();
-	static void resetFake();
-
-	static bool  _use_fake;
-	static float _fake_min;
-	static float _fake_max;
-	static float _fake_off_dsec;
-	static float _fake_on_dsec;
-#endif
-
 	// state values
 
 	static String	_status_str;
@@ -121,9 +97,7 @@ public:
 	static bool		_relay_on;
 	static float	_volts_12v;
 	static float	_volts_5v;
-#if WITH_MEM_HISTORY
 	static String 	_chart_link;
-#endif
 
 	// public states available to other objects
 
@@ -140,12 +114,7 @@ public:
 
 	// extensions
 	
-	#if WITH_MEM_HISTORY
-		virtual bool showDebug(String path) override;
-			// show HTTP debugging (turned off for chart updates)
-		String onCustomLink(const String &path,  const char **mime_type) override;
-		// virtual bool hasPlot() override    { return true; }
-	#endif
+	String onCustomLink(const String &path,  const char **mime_type) override;
 
 };
 

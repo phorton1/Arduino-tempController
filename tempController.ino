@@ -18,9 +18,7 @@ static valueIdType dash_items[] = {
 	ID_SETPOINT_HIGH,
 	ID_VOLTS_12V,
 	ID_VOLTS_5V,
-#if WITH_MEM_HISTORY
 	ID_CHART_LINK,
-#endif
     0
 };
 
@@ -31,14 +29,6 @@ static valueIdType config_items[] = {
 	ID_CALIB_VOLTS_12V,
 	ID_CALIB_VOLTS_5V,
 	ID_BACKLIGHT_SECS,
-#if WITH_FAKE_TEMPS
-	ID_USE_FAKE,
-	ID_RESET_FAKE,
-	ID_FAKE_MIN,
-	ID_FAKE_MAX,
-	ID_FAKE_OFF_DSEC,
-	ID_FAKE_ON_DSEC,
-#endif
     0
 };
 
@@ -72,19 +62,7 @@ const valDescriptor temp_values[] =
 	{ID_RELAY_ON,         	VALUE_TYPE_BOOL,	VALUE_STORE_PUB,		VALUE_STYLE_READONLY,	(void *) &tempController::_relay_on,      	NULL,	},
 	{ID_VOLTS_12V,			VALUE_TYPE_FLOAT,	VALUE_STORE_PUB,		VALUE_STYLE_READONLY,	(void *) &tempController::_volts_12v,		NULL,	{ .float_range	= {0,	0,	24}},	},
 	{ID_VOLTS_5V,			VALUE_TYPE_FLOAT,	VALUE_STORE_PUB,		VALUE_STYLE_READONLY,	(void *) &tempController::_volts_5v,		NULL,	{ .float_range	= {0,	0,	24}},	},
-#if WITH_MEM_HISTORY
 	{ID_CHART_LINK,			VALUE_TYPE_STRING,	VALUE_STORE_PUB,		VALUE_STYLE_READONLY,	(void *) &tempController::_chart_link, },
-#endif
-
-#if WITH_FAKE_TEMPS
-	{ID_USE_FAKE,			VALUE_TYPE_BOOL,	VALUE_STORE_PREF,		VALUE_STYLE_NONE,	(void *) &tempController::_use_fake,			NULL,	{ .int_range	= {1,	0,	1}}, },
-    {ID_RESET_FAKE,         VALUE_TYPE_COMMAND, VALUE_STORE_PROG,       VALUE_STYLE_NONE,   NULL, (void *) tempController::resetFake },
-	{ID_FAKE_MIN,			VALUE_TYPE_FLOAT,	VALUE_STORE_PREF,		VALUE_STYLE_NONE,	(void *) &tempController::_fake_min,			NULL,	{ .float_range	= {27,   -1000, 1000}},	},
-	{ID_FAKE_MAX, 			VALUE_TYPE_FLOAT,	VALUE_STORE_PREF,		VALUE_STYLE_NONE,	(void *) &tempController::_fake_max,			NULL,	{ .float_range	= {100,  -1000, 1000}},	},
-	{ID_FAKE_OFF_DSEC, 		VALUE_TYPE_FLOAT,	VALUE_STORE_PREF,		VALUE_STYLE_NONE,	(void *) &tempController::_fake_off_dsec,		NULL,	{ .float_range	= {0.05, -1000, 1000}},	},
-	{ID_FAKE_ON_DSEC,		VALUE_TYPE_FLOAT,	VALUE_STORE_PREF,		VALUE_STYLE_NONE,	(void *) &tempController::_fake_on_dsec,		NULL,	{ .float_range	= {0.04, -1000, 1000}},	},
-#endif                                          
-
 };
 
 
@@ -106,17 +84,7 @@ float	tempController::_temperature;
 bool 	tempController::_relay_on;
 float	tempController::_volts_12v;
 float	tempController::_volts_5v;
-#if WITH_MEM_HISTORY
-	String 	tempController::_chart_link;
-#endif
-
-#if WITH_FAKE_TEMPS
-	bool tempController::_use_fake;
-	float tempController::_fake_min;
-	float tempController::_fake_max;
-	float tempController::_fake_off_dsec;
-	float tempController::_fake_on_dsec;
-#endif
+String 	tempController::_chart_link;
 
 
 

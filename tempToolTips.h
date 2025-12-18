@@ -44,15 +44,6 @@ static const char *temp_tooltips[] = {
 	ID_VOLTS_5V,
 		"The measured voltage of the 5V supply from the buck convertor to the ESP32",
 
-#if WITH_FAKE_TEMPS
-	ID_USE_FAKE,		"Whether to use the fake tempeerature generator, or not. For testing on a bare ESP32 with no sensor",
-	ID_RESET_FAKE,		"A command to reset the fake temperature the default value",
-	ID_FAKE_MIN,		"Minimum fake temperature",
-	ID_FAKE_MAX,		"Maximum fake temperature",
-	ID_FAKE_OFF_DSEC,	"Degrees per second change when relay is off",
-	ID_FAKE_ON_DSEC,	"Degrees per second change when relay is on",
-#endif
-
 	0 };	// temp_tooltips
 
 

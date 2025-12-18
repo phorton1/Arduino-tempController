@@ -7,7 +7,8 @@
 #include "tempVolts.h"
 #include <myIOTTempSensor.h>
 #include <myIOTLog.h>
-
+#include <myIOTWebServer.h>
+#include <myIOTDataLog.h>
 
 #define DEBUG_TSENSE	0
 
@@ -28,38 +29,19 @@ bool cur_relay_on;
 //--------------------------------------
 // history in memory
 //--------------------------------------
-
-#if WITH_MEM_HISTORY
-	#include <myIOTWebServer.h>
-	#include <myIOTDataLog.h>
 	
-	#define NUM_MEM_RECS	500
-		// 4K - enough for about 24 hours
+#define NUM_MEM_RECS	2000
 
-	void addTempRecord(float temperature, bool relay_on);
-		// forward
+void addTempRecord(float temperature, bool relay_on);
+	// forward
 
-	logColumn_t  temp_cols[] = {
-		{"temp",	LOG_COL_TYPE_TEMPERATURE,	10,	},
-		{"relay",	LOG_COL_TYPE_UINT32,		1,	},
-	};
+logColumn_t  temp_cols[] = {
+	{"temp",	LOG_COL_TYPE_TEMPERATURE,	10,	},
+	{"relay",	LOG_COL_TYPE_UINT32,		1,	},
+};
 
-	myIOTDataLog data_log("tempData",2,temp_cols,0);
-		// 0 = debug_send_data level
-
-	myIOTWidget_t tempWidget = {
-		"tempWidget",
-        "/myIOT/jquery.jqplot.min.css?cache=1,"
-            "/myIOT/jquery.jqplot.min.js?cache=1,"
-            "/myIOT/jqplot.dateAxisRenderer.js?cache=1,"
-            "/myIOT/jqplot.cursor.js?cache=1,"
-            "/myIOT/jqplot.highlighter.js?cache=1,"
-            "/myIOT/jqplot.legendRenderer.js?cache=1,"
-			"/myIOT/iotChart.js",
-		"doChart('tempData')",
-		"stopChart('tempData')",
-		NULL };
-#endif	// WITH_MEM_HISTORY
+myIOTDataLog data_log("tempData",2,temp_cols,0);
+	// 0 = debug_send_data level
 
 
 
@@ -82,29 +64,14 @@ void tempController::setup()
 
 	myIOTDevice::setup();
 
-#if WITH_MEM_HISTORY
-	String html = data_log.getChartHTML(
-		300,		// height
-		600,		// width
-		86400,		// default period for the chart
-		0 );		// default refresh interval
-	tempWidget.html = new String(html);
-	setDeviceWidget(&tempWidget);
-
-	_chart_link = "<a href='/spiffs/temp_chart.html?uuid=";
+	_chart_link = "<a href='/spiffs/chart.html?uuid=";
 	_chart_link += getUUID();
 	_chart_link += "' target='_blank'>Chart</a>";
-#endif
 
 	LOGI("initial MODE=%d",_mode);
 
 	temp_volts.init();
 	t_sense.init();		// ignore errors in initialization
-
-#if WITH_FAKE_TEMPS
-	if (_use_fake)
-		resetFake();
-#endif
 
 	LOGI("starting stateTask");
     xTaskCreatePinnedToCore(stateTask,
@@ -176,50 +143,6 @@ void tempController::setRelay(bool on)
 }
 
 
-
-//----------------------------------------------------
-// WITH_FAKE_TEMPS
-//----------------------------------------------------
-
-#if WITH_FAKE_TEMPS
-
-	static uint32_t last_fake;
-
-	void tempController::resetFake()
-	{
-		cur_temperature = 26.67;
-		last_fake = millis();
-		m_temp_error = 0;
-	}
-
-	void tempController::doFake()
-	{
-		uint32_t now = millis();
-		float secs = (now-last_fake) / 1000;
-		last_fake = millis();
-		
-		float inc = cur_relay_on ?
-			-secs * _fake_on_dsec :
-			secs * _fake_off_dsec;
-		if (_mode == TEMP_MODE_ON_LOW)
-			inc = -inc;
-
-		#if DEBUG_TSENSE
-			LOGD("doFake(%0.3fC) secs(%0.0f) += inc(%0.3f)",cur_temperature,secs,inc);
-		#endif
-			
-		cur_temperature += inc;
-		if (cur_temperature > _fake_max)
-			cur_temperature = _fake_max;
-		if (cur_temperature < _fake_min)
-			cur_temperature = _fake_min;
-
-		m_temp_error = 0;
-	}
-#endif
-
-
-
 //=========================================================
 // stateMachine()
 //=========================================================
@@ -233,24 +156,17 @@ void tempController::stateMachine()
 	{
 		last_sense = now;
 
-		#if WITH_FAKE_TEMPS
-			if (_use_fake)
-				doFake();
-			else
-		#endif
+		if (_temp_sense_id != "")
 		{
-			if (_temp_sense_id != "")
+			float temp = t_sense.getDegreesC(_temp_sense_id.c_str());
+			if (temp < TEMPERATURE_ERROR)
 			{
-				float temp = t_sense.getDegreesC(_temp_sense_id.c_str());
-				if (temp < TEMPERATURE_ERROR)
-				{
-					cur_temperature = temp;
-					m_temp_error = 0;
-				}
-				else
-				m_temp_error = t_sense.getLastError();
-				t_sense.measure();
+				cur_temperature = temp;
+				m_temp_error = 0;
 			}
+			else
+			m_temp_error = t_sense.getLastError();
+			t_sense.measure();
 		}
 
 		#if DEBUG_TSENSE
@@ -373,10 +289,8 @@ void tempController::loop()
 		if (_volts_5v != temp_volts._volts_5V)
 			setFloat(ID_VOLTS_5V,temp_volts._volts_5V);
 
-		#if WITH_MEM_HISTORY
-			if (do_log)
-				addTempRecord(_temperature,_relay_on);
-		#endif
+		if (do_log)
+			addTempRecord(_temperature,_relay_on);
 
 	#if WITH_ONBOARD_LED
 		static int last_sta = -1;
@@ -398,128 +312,115 @@ void tempController::loop()
 // chart API
 //----------------------------------------
 
-#if WITH_MEM_HISTORY
+typedef struct		// in memory record = 8 bytes per record
+{
+	uint32_t	dt;
+	int16_t		c10;		// 10ths of a degree centigrade
+	uint16_t	flags;		// currently just the relay
+} tempMem_t;
 
-	typedef struct		// in memory record = 8 bytes per record
+typedef struct		// expanded record = 12 bytes per record
+{
+	uint32_t	dt;
+	float		temp;
+	uint32_t	relay;
+} memChart_t;
+
+
+tempMem_t temp_mem[NUM_MEM_RECS];
+volatile int temp_head;
+volatile int temp_tail;
+
+void addTempRecord(float temperature, bool relay_on)
+{
+	int new_head = temp_head + 1;
+	if (new_head >= NUM_MEM_RECS)
+		new_head = 0;
+	if (temp_tail == new_head)
 	{
-		uint32_t	dt;
-		int16_t		c10;		// 10ths of a degree centigrade
-		uint16_t	flags;		// currently just the relay
-	} tempMem_t;
-
-	typedef struct		// expanded record = 12 bytes per record
-	{
-		uint32_t	dt;
-		float		temp;
-		uint32_t	relay;
-	} memChart_t;
-
-
-	tempMem_t temp_mem[NUM_MEM_RECS];
-	volatile int temp_head;
-	volatile int temp_tail;
-
-	void addTempRecord(float temperature, bool relay_on)
-	{
-		int new_head = temp_head + 1;
-		if (new_head >= NUM_MEM_RECS)
-			new_head = 0;
-		if (temp_tail == new_head)
-		{
-			temp_tail++;
-			if (temp_tail >= NUM_MEM_RECS)
-				temp_tail = 0;
-		}
-
-		tempMem_t *temp = &temp_mem[temp_head];
-		temp->dt = time(NULL);
-		temp->c10 = (temperature * 10.0);
-		temp->flags = relay_on;
-		temp_head = new_head;
+		temp_tail++;
+		if (temp_tail >= NUM_MEM_RECS)
+			temp_tail = 0;
 	}
 
+	tempMem_t *temp = &temp_mem[temp_head];
+	temp->dt = time(NULL);
+	temp->c10 = (temperature * 10.0);
+	temp->flags = relay_on;
+	temp_head = new_head;
+}
 
-	// virtual
-	bool tempController::showDebug(String path)	// override;
+
+bool sendOne(uint32_t cutoff, tempMem_t *in_rec)
+{
+	if (in_rec->dt >= cutoff)
 	{
-		// called by myIOTHttp while path still has /custom at front
-		// set to 1 to not debug chart_data calls
-		#if 1
-			if (path.startsWith("/custom/chart_data/tempData"))
-				return 0;
-		#endif
-		return 1;
+		memChart_t out_rec;
+		out_rec.dt = in_rec->dt;
+		out_rec.temp = in_rec->c10;
+		out_rec.temp /= 10.0;
+		out_rec.relay = in_rec->flags;
+		if (!myiot_web_server->writeBinaryData((const char*)&out_rec, sizeof(memChart_t)))
+			return false;
 	}
+	return true;
+}
 
 
-	bool sendOne(uint32_t cutoff, tempMem_t *in_rec)
+String tempController::onCustomLink(const String &path,  const char **mime_type)
+{
+	LOGD("tempController::onCustomLink(%s)",path.c_str());
+	if (path.startsWith("chart_html"))
 	{
-		if (in_rec->dt >= cutoff)
-		{
-			memChart_t out_rec;
-			out_rec.dt = in_rec->dt;
-			out_rec.temp = in_rec->c10;
-			out_rec.temp /= 10.0;
-			out_rec.relay = in_rec->flags;
-			if (!myiot_web_server->writeBinaryData((const char*)&out_rec, sizeof(memChart_t)))
-				return false;
-		}
-		return true;
+		int period = myiot_web_server->getArg("period",86400);	// day default
+		return data_log.getChartHTML(period,true);
+			// true = with_degrees temperature converter
 	}
-
-
-	String tempController::onCustomLink(const String &path,  const char **mime_type)
-		// called from myIOTHTTP.cpp::handleRequest()
-		// for any paths that start with /custom/
+	else if (path.startsWith("chart_header"))
 	{
-		LOGD("tempController::onCustomLink(%s)",path.c_str());
-		if (path.startsWith("chart_html/tempData"))
-		{
-			// only used by temp_chart.html inasmuch as the
-			// chart html is baked into the myIOT widget
-
-			int height = myiot_web_server->getArg("height",400);
-			int width  = myiot_web_server->getArg("width",800);
-			int period = myiot_web_server->getArg("period",86400);	// day default
-			int refresh = myiot_web_server->getArg("refresh",0);
-			return data_log.getChartHTML(height,width,period,refresh);
-		}
-		else if (path.startsWith("chart_header/tempData"))
-		{
-			*mime_type = "application/json";
-			return data_log.getChartHeader();
-		}
-		else if (path.startsWith("chart_data/tempData"))
+		*mime_type = "application/json";
+		return data_log.getChartHeader();
+	}
+	else if (path.startsWith("chart_data") ||
+			 path.startsWith("update_chart_data"))
+	{
+		uint32_t cutoff = 0;
+		if (path.startsWith("chart_data"))
 		{
 			uint32_t secs = myiot_web_server->getArg("secs",0);
-			uint32_t cutoff = time(NULL) - secs;
+			cutoff = time(NULL) - secs;
+				// UPDATE means "later than or equal" to dt
+		}
+		else
+		{
+			cutoff = myiot_web_server->getArg("since",0) + 1;
+				// SINCE means "later than" to dt
+		}
+		int tail = temp_tail;
+		int head = temp_head;
 
-			int tail = temp_tail;
-			int head = temp_head;
+		if (!myiot_web_server->startBinaryResponse("application/octet-stream", CONTENT_LENGTH_UNKNOWN))
+			return "";
 
-			if (!myiot_web_server->startBinaryResponse("application/octet-stream", CONTENT_LENGTH_UNKNOWN))
-				return "";
-
-			if (head < tail)
-			{
-				while (tail < NUM_MEM_RECS)
-				{
-					if (!sendOne(cutoff,&temp_mem[tail++]))
-						return "";
-				}
-				tail = 0;
-			}
-			while (tail < head)
+		if (head < tail)
+		{
+			while (tail < NUM_MEM_RECS)
 			{
 				if (!sendOne(cutoff,&temp_mem[tail++]))
 					return "";
 			}
-
-			return RESPONSE_HANDLED;
+			tail = 0;
+		}
+		while (tail < head)
+		{
+			if (!sendOne(cutoff,&temp_mem[tail++]))
+				return "";
 		}
 
-		return "";
+		return RESPONSE_HANDLED;
 	}
 
-#endif
+	return "";
+}
+
 
