@@ -64,7 +64,7 @@ void tempController::setup()
 
 	myIOTDevice::setup();
 
-	_chart_link = "<a href='/spiffs/chart.html?uuid=";
+	_chart_link = "<a href='/spiffs/chart.html?data_name=tempData&uuid=";
 	_chart_link += getUUID();
 	_chart_link += "' target='_blank'>Chart</a>";
 
