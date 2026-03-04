@@ -50,7 +50,7 @@
 #define SCREEN_POWER            2
 #define FIRST_IOT_SCREEN        3
 #define SCREEN_CLEAR_ERROR      3
-#define NUM_IOT_SCREENS         8
+#define NUM_IOT_SCREENS         7
 #define NUM_SCREENS             (FIRST_IOT_SCREEN + NUM_IOT_SCREENS)
 
 const char *edit_ids[NUM_IOT_SCREENS] = {
@@ -59,7 +59,6 @@ const char *edit_ids[NUM_IOT_SCREENS] = {
     ID_MODE,
     ID_BACKLIGHT_SECS,
     ID_DEGREE_TYPE,
-    ID_WIFI,
     ID_STA_SSID,
     ID_REBOOT,
 };
@@ -501,18 +500,15 @@ void tempScreen::showScreen()
     if (m_screen_num == SCREEN_MAIN)
     {
         top_right = "WOFF";
-        if (controller->getBool(ID_WIFI))
-        {
-            iotConnectStatus_t mode = controller->getConnectStatus();
-            if (mode == IOT_CONNECT_ALL)
-                "APS";
-            else if (mode == IOT_CONNECT_AP)
-                top_right = "AP";
-            else if (mode == IOT_CONNECT_STA)
-                top_right = "STA";
-            else
-                top_right = "WERR";
-        }
+        iotConnectStatus_t mode = controller->getConnectStatus();
+        if (mode == IOT_CONNECT_ALL)
+            "APS";
+        else if (mode == IOT_CONNECT_AP)
+            top_right = "AP";
+        else if (mode == IOT_CONNECT_STA)
+            top_right = "STA";
+        else
+            top_right = "WERR";
 
         static String s_temp_str;
         if (screen_changed || s_temp_str != temp_str)
@@ -557,7 +553,6 @@ void tempScreen::showScreen()
             String sta_ssid = controller->getString(ID_STA_SSID);
             iotConnectStatus_t mode = controller->getConnectStatus();
             const char *mode_str =
-                !controller->getBool(ID_WIFI) ? "WIFI_OFF" :
                 mode == WIFI_MODE_AP ? "WIFI_AP" :
                 mode == WIFI_MODE_STA ? sta_ssid.c_str() : // "WIFI_STA" :
                 mode == WIFI_MODE_APSTA ? "WIFI_AP_STA" :
