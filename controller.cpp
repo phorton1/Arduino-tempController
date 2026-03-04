@@ -40,7 +40,7 @@ logColumn_t  temp_cols[] = {
 	{"relay",	LOG_COL_TYPE_UINT32,		1,	},
 };
 
-myIOTDataLog data_log("tempData",2,temp_cols,0);
+myIOTDataLog data_log("tempData",2,temp_cols);
 	// 0 = debug_send_data level
 
 
