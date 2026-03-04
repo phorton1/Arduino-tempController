@@ -36,7 +36,7 @@ void addTempRecord(float temperature, bool relay_on);
 	// forward
 
 logColumn_t  temp_cols[] = {
-	{"temp",	LOG_COL_TYPE_TEMPERATURE,	10,	},
+	{"temp",	LOG_COL_TYPE_CENTIGRADE32,	10,	},
 	{"relay",	LOG_COL_TYPE_UINT32,		1,	},
 };
 
