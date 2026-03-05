@@ -34,7 +34,7 @@
 
 #define TEMP_CONTROLLER			"tempController"
 #define TEMP_CONTROLLER_VERSION	"tc0.1"
-#define TEMP_CONTROLLER_URL		"https://github.com/phorton1/Arduino-tempController"
+#define TEMP_CONTROLLER_URL		"https://github.com/phorton1/Arduino-boat-tempController"
 
 #define BACKLIGHT_ALWAYS_ON			120
 
